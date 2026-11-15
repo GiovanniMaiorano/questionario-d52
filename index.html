@@ -3,7 +3,7 @@
 <head>
 <script>
 // >>> INCOLLA QUI, TRA GLI APICI, L'URL DELLA WEB APP GOOGLE (quello che termina con /exec) <<<
-var API_URL = 'https://script.google.com/macros/s/AKfycbze7IG1Zd2NoTL1T7mQH2ALV9nO7hTOLz8Csre24oJ72Jx6-jYZJyja-57KkWhGcgiREg/exec';
+var API_URL = '';
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Questionario per la valutazione della rilevanza delle digital capabilities rispetto ai cluster di sostenibilità sociale</title>
@@ -127,7 +127,6 @@ var API_URL = 'https://script.google.com/macros/s/AKfycbze7IG1Zd2NoTL1T7mQH2ALV9
   table.info .muted { display:block; margin-top:3px; }
   details.info-det { margin:8px 0 16px; } details.info-det > summary { padding:6px 0; } details.info-det[open] > summary { margin-bottom:6px; }
   .intro-a { margin:0 0 14px; } .intro-a p { margin:6px 0; }
-  td.nvrow { background:#faf6ec; }
   .firma { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; border-top:2px solid var(--oro); margin-top:22px; padding-top:16px; }
   .firma p { margin:0; }
   .firma img { height:62px; width:auto; }
@@ -467,7 +466,7 @@ function renderB() {
     if (['M', 'I', 'N', 'D', 'Tutte'].indexOf(stato.filtroB) < 0) stato.filtroB = 'Tutte';
     filtro.querySelectorAll('input').forEach(function (r) { r.checked = r.value === stato.filtroB; });
     var html = '<table><thead><tr><th>Micro-capability</th>' + DATI.cluster.map(function (cl) { return '<th title="' + esc(cl.nome) + '">' + cl.codice + '</th>'; }).join('') +
-      '<th title="Non valutabile per tutti i cluster">NV</th></tr></thead><tbody>';
+      '</tr></thead><tbody>';
     tutteCap().forEach(function (cap) {
       if (stato.filtroB !== 'Tutte' && cap.dim !== stato.filtroB) return;
       var riga = DATI.cluster.some(function (cl) { var v = stato.b[cl.codice][cap.codice]; return v === undefined || v === ''; });
@@ -479,9 +478,7 @@ function renderB() {
           ['', '0', '1', '2', '3', 'NV'].map(function (o) { return '<option value="' + o + '"' + (o === v ? ' selected' : '') + '>' + (o === '' ? '—' : o) + '</option>'; }).join('') +
           '</select></td>';
       });
-      var tuttiNV = DATI.cluster.every(function (cl) { return stato.b[cl.codice][cap.codice] === 'NV'; });
-      html += '<td class="nvrow"><label class="opt"><input type="checkbox" data-nvrow="' + cap.codice + '"' + (tuttiNV ? ' checked' : '') +
-        ' aria-label="' + esc(cap.codice + ' non valutabile per tutti i cluster') + '"> ?</label></td></tr>';
+      html += '</tr>';
     });
     tw.innerHTML = html + '</tbody></table>';
     tw.querySelectorAll('select').forEach(function (s) {
@@ -492,21 +489,7 @@ function renderB() {
         var capc = s.getAttribute('data-cap');
         var incompleta = DATI.cluster.some(function (cl) { var v = stato.b[cl.codice][capc]; return v === undefined || v === ''; });
         s.closest('tr').classList.toggle('missing', evidenzia && incompleta);
-        var tuttiNV = DATI.cluster.every(function (cl) { return stato.b[cl.codice][capc] === 'NV'; });
-        var cb = tw.querySelector('input[data-nvrow="' + capc + '"]'); if (cb) cb.checked = tuttiNV;
         aggiornaStato();
-      };
-    });
-    // NV di riga: la micro-capability è non valutabile per tutti e sei i cluster
-    tw.querySelectorAll('input[data-nvrow]').forEach(function (cb) {
-      cb.onchange = function () {
-        var capc = cb.getAttribute('data-nvrow');
-        DATI.cluster.forEach(function (cl) {
-          if (cb.checked) stato.b[cl.codice][capc] = 'NV';
-          else if (stato.b[cl.codice][capc] === 'NV') stato.b[cl.codice][capc] = '';
-        });
-        salvaLocale();
-        disegna();
       };
     });
     aggiornaStato();
